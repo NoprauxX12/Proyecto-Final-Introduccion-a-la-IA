@@ -5,7 +5,7 @@ from pathlib import Path
 import streamlit as st
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
-# Si ejecutas con el botón ▶ ("python app.py"), no hay servidor: relanzar con Streamlit.
+# .\.venv\Scripts\python.exe -m streamlit run app.py
 if get_script_run_ctx() is None:
     script = Path(__file__).resolve()
     sys.stderr.write(
