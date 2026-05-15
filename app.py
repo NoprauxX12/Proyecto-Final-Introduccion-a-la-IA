@@ -5,7 +5,6 @@ from pathlib import Path
 import streamlit as st
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
-# .\.venv\Scripts\python.exe -m streamlit run app.py
 if get_script_run_ctx() is None:
     script = Path(__file__).resolve()
     sys.stderr.write(
@@ -30,8 +29,6 @@ st.set_page_config(
     page_icon="💵",
     layout="wide"
 )
-
-# ── Carga de artefactos ──────────────────────────────────────────────────────
 
 @st.cache_resource
 def load_model():
@@ -66,8 +63,6 @@ try:
 except FileNotFoundError:
     datos_ok = False
 
-# ── Encabezado ───────────────────────────────────────────────────────────────
-
 st.title("💵 Predicción del USD/COP con XGBoost")
 st.markdown("**Proyecto Final — Introducción a la Inteligencia Artificial**")
 st.divider()
@@ -76,14 +71,7 @@ if not datos_ok:
     st.error("Primero ejecuta `python USD_COP_prediction.py` para generar los artefactos del modelo.")
     st.stop()
 
-# ── Tabs principales ─────────────────────────────────────────────────────────
-
 tab1, tab2, tab3 = st.tabs(["📈 Datos históricos", "🧠 Entrenamiento", "📊 Resultados"])
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# TAB 1 — DATOS HISTÓRICOS
-# ════════════════════════════════════════════════════════════════════════════
 
 with tab1:
     st.subheader("Precio USD/COP a lo largo del tiempo")
@@ -102,7 +90,6 @@ with tab1:
     else:
         df_plot = df_raw.copy()
 
-    # Calcular medias móviles
     df_plot = df_plot.copy()
     df_plot['SMA20'] = df_plot['Close'].rolling(20).mean()
     df_plot['SMA50'] = df_plot['Close'].rolling(50).mean()
@@ -111,7 +98,6 @@ with tab1:
                         row_heights=[0.75, 0.25],
                         vertical_spacing=0.05)
 
-    # Velas japonesas
     fig.add_trace(go.Candlestick(
         x=df_plot['Date'],
         open=df_plot['Open'], high=df_plot['High'],
@@ -128,7 +114,6 @@ with tab1:
                              line=dict(color='#a8dadc', width=1.2),
                              name='SMA 50'), row=1, col=1)
 
-    # RSI
     delta = df_plot['Close'].diff()
     gain  = delta.clip(lower=0).rolling(14).mean()
     loss  = (-delta.clip(upper=0)).rolling(14).mean()
@@ -153,7 +138,6 @@ with tab1:
 
     st.plotly_chart(fig, width="stretch")
 
-    # Métricas rápidas
     ultimo  = df_raw['Close'].iloc[-1]
     anterior = df_raw['Close'].iloc[-2]
     cambio  = (ultimo - anterior) / anterior * 100
@@ -165,11 +149,6 @@ with tab1:
     m2.metric("Máximo histórico", f"${maximo:,.2f}")
     m3.metric("Mínimo histórico", f"${minimo:,.2f}")
     m4.metric("Total de velas 1H", f"{len(df_raw):,}")
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# TAB 2 — ENTRENAMIENTO
-# ════════════════════════════════════════════════════════════════════════════
 
 with tab2:
     st.subheader("Curvas de entrenamiento")
@@ -239,14 +218,12 @@ with tab2:
     )
     st.plotly_chart(fig3, width="stretch")
 
-    # Leyenda de colores
     lc1, lc2, lc3, lc4 = st.columns(4)
     lc1.markdown("🔵 Features 1H (horario)")
     lc2.markdown("🔴 Features 1D (diario)")
     lc3.markdown("🟠 WTI (petróleo)")
     lc4.markdown("🩵 DXY (índice dólar)")
 
-    # Importancia por timeframe
     st.divider()
     st.subheader("Importancia por fuente de datos")
     all_imp = pd.Series(model.feature_importances_, index=feature_cols)
@@ -263,11 +240,6 @@ with tab2:
                   template='plotly_dark')
     fig4.update_layout(height=380, margin=dict(t=10, b=10))
     st.plotly_chart(fig4, width="stretch")
-
-
-# ════════════════════════════════════════════════════════════════════════════
-# TAB 3 — RESULTADOS
-# ════════════════════════════════════════════════════════════════════════════
 
 with tab3:
     st.subheader("Resultados del modelo en datos no vistos (Test)")
@@ -299,7 +271,6 @@ with tab3:
     test_acc   = accuracy_score(y_test, test_pred)
     cm         = confusion_matrix(y_test, test_pred)
 
-    # Métricas
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("AUC-ROC Validation", f"{val_auc_f:.4f}")
     col2.metric("Accuracy Validation", f"{val_acc_f*100:.2f}%")
